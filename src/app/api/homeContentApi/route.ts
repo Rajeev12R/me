@@ -8,12 +8,17 @@ export async function POST(request: NextRequest) {
     await connectDB()
     const body = await request.json()
     
-    // Ensure all projects have heading and features with proper defaults
-    if (body.topProjects) {
+    // Ensure all projects have all required fields with proper defaults
+    if (body.topProjects && Array.isArray(body.topProjects)) {
       body.topProjects = body.topProjects.map((proj: any) => ({
-        ...proj,
+        title: proj.title || "",
         heading: proj.heading || "",
-        features: proj.features || [],
+        liveLink: proj.liveLink || "",
+        githubLink: proj.githubLink || "",
+        description: proj.description || "",
+        features: Array.isArray(proj.features) ? proj.features : [],
+        skills: Array.isArray(proj.skills) ? proj.skills : [],
+        image: Array.isArray(proj.image) ? proj.image : [],
       }))
     }
     
@@ -32,7 +37,7 @@ export async function PUT(request: NextRequest) {
     await connectDB()
     const body = await request.json()
     
-    // Extract ALL fields from body including links
+    // Extract ALL fields from body
     const { 
       name, 
       role, 
@@ -48,10 +53,12 @@ export async function PUT(request: NextRequest) {
       links
     } = body
 
+    console.log("Received topProjects:", topProjects)
+
     let content = await HomeContent.findOne().sort({ createdAt: -1 })
     
     if (content) {
-      // Update all fields
+      // Update all fields including new ones
       content.name = name || content.name
       content.role = role || content.role
       content.skills = skills || content.skills
@@ -63,31 +70,33 @@ export async function PUT(request: NextRequest) {
       content.subHeading = subHeading || content.subHeading
       content.links = links || content.links
       
-      // Ensure each project has heading & features with proper defaults
-      if (topProjects) {
+      // Handle topProjects with all fields including new ones
+      if (topProjects && Array.isArray(topProjects)) {
         content.topProjects = topProjects.map((proj: any) => ({
           title: proj.title || "",
-          heading: proj.heading || "", // Make sure this is included
+          heading: proj.heading || "",
           liveLink: proj.liveLink || "",
           githubLink: proj.githubLink || "",
           description: proj.description || "",
-          features: proj.features || [], // Make sure this is included
-          skills: proj.skills || [],
-          image: proj.image || [],
+          features: Array.isArray(proj.features) ? proj.features : [],
+          skills: Array.isArray(proj.skills) ? proj.skills : [],
+          image: Array.isArray(proj.image) ? proj.image : [],
         }))
       }
       
-      if (topBlogs) {
+      // Handle topBlogs
+      if (topBlogs && Array.isArray(topBlogs)) {
         content.topBlogs = topBlogs.map((blog: any) => ({
           title: blog.title || "",
           link: blog.link || "",
           summary: blog.summary || "",
-          image: blog.image || [],
+          image: Array.isArray(blog.image) ? blog.image : [],
           date: blog.date || new Date(),
-          tags: blog.tags || [],
+          tags: Array.isArray(blog.tags) ? blog.tags : [],
         }))
       }
       
+      console.log("Updated content.topProjects:", content.topProjects)
       const savedContent = await content.save()
       return NextResponse.json({ message: "Home content updated successfully", data: savedContent }, { status: 200 })
       
@@ -99,29 +108,29 @@ export async function PUT(request: NextRequest) {
         description: description || "",
         imageUrl: imageUrl || "",
         resume: resume || "",
-        skills: skills || [],
+        skills: Array.isArray(skills) ? skills : [],
         email: email || "",
         heading: heading || "",
         subHeading: subHeading || "",
         links: links || {},
-        topProjects: (topProjects || []).map((proj: any) => ({
+        topProjects: Array.isArray(topProjects) ? topProjects.map((proj: any) => ({
           title: proj.title || "",
-          heading: proj.heading || "", // Include heading
+          heading: proj.heading || "",
           liveLink: proj.liveLink || "",
           githubLink: proj.githubLink || "",
           description: proj.description || "",
-          features: proj.features || [], // Include features
-          skills: proj.skills || [],
-          image: proj.image || [],
-        })),
-        topBlogs: (topBlogs || []).map((blog: any) => ({
+          features: Array.isArray(proj.features) ? proj.features : [],
+          skills: Array.isArray(proj.skills) ? proj.skills : [],
+          image: Array.isArray(proj.image) ? proj.image : [],
+        })) : [],
+        topBlogs: Array.isArray(topBlogs) ? topBlogs.map((blog: any) => ({
           title: blog.title || "",
           link: blog.link || "",
           summary: blog.summary || "",
-          image: blog.image || [],
+          image: Array.isArray(blog.image) ? blog.image : [],
           date: blog.date || new Date(),
-          tags: blog.tags || [],
-        })),
+          tags: Array.isArray(blog.tags) ? blog.tags : [],
+        })) : [],
       }
       
       content = await HomeContent.create(newData)
@@ -133,11 +142,13 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ message: "Error updating home content", error }, { status: 500 })
   }
 }
+
 // Get latest content
 export async function GET() {
   try {
     await connectDB()
     const content = await HomeContent.findOne().sort({ createdAt: -1 })
+    console.log("Fetched content:", content?.topProjects)
     return NextResponse.json({ success: true, data: content })
   } catch (error) {
     console.error("Error fetching home content:", error)

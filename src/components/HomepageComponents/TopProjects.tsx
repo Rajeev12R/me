@@ -5,7 +5,9 @@ import axios from "axios"
 interface Project {
   _id?: string
   title: string
+  heading?: string
   description: string
+  features?: string[]
   liveLink?: string
   githubLink?: string
   skills: string[]
@@ -224,7 +226,7 @@ const TopProjects = () => {
                 {/* Project Description */}
                 <div className="mb-8 pr-12">
                   <h3 className="text-xl leading-relaxed text-white/90 font-light">
-                    {project.description || project.title}
+                    {project.heading || project.description || project.title}
                   </h3>
                 </div>
 
@@ -337,6 +339,21 @@ const TopProjects = () => {
                     ))}
                   </div>
                 </div>
+
+                {/* Features Section - NEW */}
+                {selectedProject.features && selectedProject.features.length > 0 && (
+                  <div className="pl-6 space-y-4">
+                    <h3 className="text-xl font-semibold text-gray-300">Key Features</h3>
+                    <div className="space-y-2">
+                      {selectedProject.features.map((feature, index) => (
+                        <div key={index} className="flex items-start gap-3">
+                          <div className="w-1.5 h-1.5 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
+                          <span className="text-gray-300 text-sm leading-relaxed">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Project URL - ALIGNED WITH CONTENT */}
                 {selectedProject.liveLink && (

@@ -5,15 +5,15 @@ import { Plus, Trash2, Save, Edit3, Eye, EyeOff, Upload, User, Mail, Briefcase, 
 
 interface Project {
   title: string
-  heading: string // Added new heading field
+  heading: string
   liveLink: string
   githubLink: string
   description: string
-  features: string[] // Added new features field
+  features: string[]
   skills: string[]
   image: string[]
   skillsInput?: string
-  featuresInput?: string // Added features input helper
+  featuresInput?: string
   imageInput?: string
 }
 
@@ -75,6 +75,8 @@ const AdminDashboard: React.FC = () => {
   try {
     const response = await fetch("/api/homeContentApi")
     const result = await response.json()
+    console.log("Admin: Fetched data:", result)
+    
     if (result.success && result.data) {
       const processedData = {
         ...result.data,
@@ -89,20 +91,33 @@ const AdminDashboard: React.FC = () => {
               .join(", ")
           : "",
         skillsInput: result.data.skills ? result.data.skills.join(", ") : "",
-        topProjects: result.data.topProjects.map((project: Project) => ({
+        topProjects: (result.data.topProjects || []).map((project: any) => ({
           ...project,
-          heading: project.heading || "", // Ensure heading exists
-          features: project.features || [], // Ensure features exists
+          title: project.title || "",
+          heading: project.heading || "",
+          liveLink: project.liveLink || "",
+          githubLink: project.githubLink || "",
+          description: project.description || "",
+          features: Array.isArray(project.features) ? project.features : [],
+          skills: Array.isArray(project.skills) ? project.skills : [],
+          image: Array.isArray(project.image) ? project.image : [],
           skillsInput: project.skills ? project.skills.join(", ") : "",
-          featuresInput: project.features ? project.features.join(", ") : "", // Add features input
+          featuresInput: Array.isArray(project.features) ? project.features.join(", ") : "",
           imageInput: project.image ? project.image.join(", ") : "",
         })),
-        topBlogs: result.data.topBlogs.map((blog: Blog) => ({
+        topBlogs: (result.data.topBlogs || []).map((blog: any) => ({
           ...blog,
+          title: blog.title || "",
+          link: blog.link || "",
+          summary: blog.summary || "",
+          image: Array.isArray(blog.image) ? blog.image : [],
+          date: blog.date || new Date().toISOString().split("T")[0],
+          tags: Array.isArray(blog.tags) ? blog.tags : [],
           tagsInput: blog.tags ? blog.tags.join(", ") : "",
           imageInput: blog.image ? blog.image.join(", ") : "",
         })),
       }
+      console.log("Admin: Processed data:", processedData)
       setFormData(processedData)
       setExistingContent(result.data)
     }
@@ -149,7 +164,6 @@ const AdminDashboard: React.FC = () => {
           .map((item) => item.trim())
           .filter((item) => item)
       } else if (field === "featuresInput") {
-        // Added features input handling
         project.featuresInput = value
         project.features = value
           .split(",")
@@ -203,11 +217,11 @@ const addProject = () => {
       ...prev.topProjects,
       {
         title: "",
-        heading: "", // This is correct
+        heading: "",
         liveLink: "",
         githubLink: "",
         description: "",
-        features: [], // This is correct
+        features: [],
         skills: [],
         image: [],
         skillsInput: "",
@@ -258,13 +272,27 @@ const prepareDataForSubmission = () => {
       const { skillsInput, featuresInput, imageInput, ...cleanProject } = project
       return {
         ...cleanProject,
-        heading: cleanProject.heading || "", // Ensure heading is included
-        features: cleanProject.features || [], // Ensure features is included
+        title: cleanProject.title || "",
+        heading: cleanProject.heading || "",
+        liveLink: cleanProject.liveLink || "",
+        githubLink: cleanProject.githubLink || "",
+        description: cleanProject.description || "",
+        features: Array.isArray(cleanProject.features) ? cleanProject.features : [],
+        skills: Array.isArray(cleanProject.skills) ? cleanProject.skills : [],
+        image: Array.isArray(cleanProject.image) ? cleanProject.image : [],
       }
     }),
     topBlogs: formData.topBlogs.map((blog) => {
       const { tagsInput, imageInput, ...cleanBlog } = blog
-      return cleanBlog
+      return {
+        ...cleanBlog,
+        title: cleanBlog.title || "",
+        link: cleanBlog.link || "",
+        summary: cleanBlog.summary || "",
+        image: Array.isArray(cleanBlog.image) ? cleanBlog.image : [],
+        date: cleanBlog.date || new Date().toISOString().split("T")[0],
+        tags: Array.isArray(cleanBlog.tags) ? cleanBlog.tags : [],
+      }
     }),
   }
 
@@ -279,6 +307,7 @@ const prepareDataForSubmission = () => {
       const url = "/api/homeContentApi"
       const method = existingContent ? "PUT" : "POST"
       const cleanedData = prepareDataForSubmission()
+      console.log("Admin: Submitting data:", cleanedData)
       const payload = existingContent ? { ...cleanedData, id: existingContent._id } : cleanedData
 
       const response = await fetch(url, {
@@ -288,12 +317,15 @@ const prepareDataForSubmission = () => {
       })
 
       const result = await response.json()
+      console.log("Admin: Submit response:", result)
 
       if (response.ok) {
         alert(existingContent ? "Content updated successfully!" : "Content saved successfully!")
         if (!existingContent) {
           setExistingContent(result.data)
         }
+        // Refresh the data after successful save
+        await fetchExistingContent()
       } else {
         alert("Error: " + result.message)
       }
