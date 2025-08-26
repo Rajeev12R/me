@@ -1,0 +1,61 @@
+'use client'
+import React, {useState, useEffect} from "react";
+import { RiArrowRightSLine } from "react-icons/ri";
+import { CiLocationArrow1 } from "react-icons/ci";
+import axios from "axios";
+import ProfileShowcaseSection from "./ProfileGrid";
+import Image from "next/image";
+import EllipticalDivider from "@/components/BackgroundComponents/Divider";
+const Hero = () => {
+  const [content, setContent] = useState<{heading: string; subHeading: string} | null>(null);
+
+  useEffect(()=> {
+    const fetchContent = async () => {
+      try {
+        const response = await axios.get('/api/homeContentApi');
+        const data = await response.data;
+        if(data.success){
+          setContent(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching home content:', error);
+      }
+    };
+
+    fetchContent();
+  }, []);
+  return (
+    <section className="flex flex-col h-full w-full items-center justify-center mt-20 px-4">
+      <div className="max-w-lg mx-auto pr-4 pl-1 py-1 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center gap-2 shadow-sm">
+        <span className="bg-blue-600 text-white text-xs font-medium px-2 py-0.5 rounded-full">
+          New
+        </span>
+        <span className="text-sm text-white/80">
+          Building <span className="font-semibold text-white">Converge-X</span>
+        </span>
+        <RiArrowRightSLine className="text-white/70 text-lg" />
+      </div>
+      <h1 className="max-w-[830px] leading-12 text-4xl sm:text-5xl font-bold text-center mt-6 bg-white bg-clip-text text-transparent">
+        {content?.heading ?? "Crafting Digital Experiences with Code and Creativity"}
+      </h1>
+      <p className="max-w-2xl text-center mt-8 text-lg sm:text-xl text-white/70">
+        {content?.subHeading ?? "I'm Ranjan, a passionate developer dedicated to transforming ideas into innovative digital solutions."}
+      </p>
+      <div className="relative group rounded-full mt-8 px-6 py-3 inline-flex items-center gap-3 cursor-pointer shadow-lg overflow-hidden border border-white/10">
+      <div className="absolute top-0 right-0 h-full w-full bg-white transform translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-in-out z-0"></div>
+        <button className="relative z-10 font-medium text-white group-hover:text-black transition-colors duration-500">
+        Let's Connect
+        </button>
+      <CiLocationArrow1
+      className="relative z-10 text-white/70 group-hover:text-black text-lg transition-all duration-500 group-hover:translate-x-1 group-hover:rotate-45"
+      />
+      </div>
+
+      {/* <EllipticalDivider height="h-32" className="w-full max-w-4xl" /> */}
+
+    <ProfileShowcaseSection/>
+    </section>
+  );
+};
+
+export default Hero;
