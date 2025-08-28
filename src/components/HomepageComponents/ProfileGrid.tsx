@@ -1,38 +1,19 @@
 "use client"
 import { SiTailwindcss } from "react-icons/si"
-import { useState, useEffect } from "react"
-import axios from "axios"
 
 interface HomeContent {
-  imageUrl: string
-  description: string
-  name: string
-  role: string
-  email: string
-  skills: string[]
+  imageUrl?: string
+  description?: string
+  name?: string
+  role?: string
+  email?: string
+  skills?: string[]
 }
 
-const ProfileShowcaseSection = () => {
-  const [content, setContent] = useState<HomeContent | null>(null)
+const ProfileGrid = ({ data }: { data: HomeContent | null }) => {
+  const skillsRow1 = data?.skills?.slice(0, Math.ceil((data?.skills?.length || 0) / 2)) || []
+  const skillsRow2 = data?.skills?.slice(Math.ceil((data?.skills?.length || 0) / 2)) || []
 
-  useEffect(() => {
-    const fetchContent = async () => {
-      try {
-        const response = await axios.get("/api/homeContentApi")
-        const data = await response.data
-        if (data.success) {
-          setContent(data.data)
-        }
-      } catch (error) {
-        console.error("Error fetching profile content:", error)
-      }
-    }
-
-    fetchContent()
-  }, [])
-
-  const skillsRow1 = content?.skills?.slice(0, Math.ceil((content.skills.length || 0) / 2)) || []
-  const skillsRow2 = content?.skills?.slice(Math.ceil((content.skills.length || 0) / 2)) || []
   return (
     <section className="w-full bg-black text-white px-6 py-16 mt-10">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
@@ -41,7 +22,7 @@ const ProfileShowcaseSection = () => {
           {/* Full Image at Top */}
           <div className="w-full overflow-hidden rounded-xl mb-6">
             <img
-              src={content?.imageUrl || "/default-profile.jpg"}
+              src={data?.imageUrl || "/default-profile.jpg"}
               alt="Profile"
               className="w-full h-64 md:h-80 object-cover rounded-xl"
             />
@@ -49,14 +30,14 @@ const ProfileShowcaseSection = () => {
 
           {/* Content in middle - grows to fill space */}
           <div className="flex-1 flex flex-col justify-center items-center text-center mb-6">
-            <h3 className="text-2xl font-bold mb-2">{content?.name || "Rajeev"}</h3>
-            <p className="text-purple-400 text-sm font-medium mb-4">{content?.role}</p>
+            <h3 className="text-2xl font-bold mb-2">{data?.name || "Rajeev"}</h3>
+            <p className="text-purple-400 text-sm font-medium mb-4">{data?.role || "Full Stack Developer"}</p>
           </div>
 
           {/* Description at Bottom */}
           <div className="mt-auto">
             <p className="text-gray-400 text-center text-sm leading-relaxed">
-              {content?.description ||
+              {data?.description ||
                 "I'm Ranjan, a passionate developer dedicated to transforming ideas into innovative digital solutions."}
             </p>
           </div>
@@ -101,13 +82,21 @@ const ProfileShowcaseSection = () => {
               </div>
             </div>
           </div>
+          <div className="relative h-50 w-80 p-6 mx-auto flex justify-center items-center bg-black border border-black rounded-xl overflow-hidden">
+            <img
+              src="/profile.gif"
+              alt="Profile Animation"
+              className="w-full h-full object-contain"
+            />
+          </div>
+
         </div>
 
         {/* Contact CTA Card */}
         <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-lg text-center flex flex-col justify-center items-center">
           <h3 className="text-xl font-semibold mb-4">Let's work together on your next project</h3>
           <button className="flex items-center gap-3 px-6 py-3 bg-white text-black font-medium rounded-full hover:bg-gray-200 transition">
-            <span>{content?.email}</span>
+            <span>{data?.email || "you@example.com"}</span>
           </button>
         </div>
 
@@ -169,4 +158,4 @@ const ProfileShowcaseSection = () => {
   )
 }
 
-export default ProfileShowcaseSection
+export default ProfileGrid

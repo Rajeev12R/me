@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 const Header = () => {
   return (
-    <header className="sticky top-6 px-4 z-60">
+    <header className="sticky top-6 px-4 z-100">
       <nav className="max-w-xl mx-auto relative ">
         <div className="relative bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl shadow-black/20 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-transparent to-white/10 opacity-50"></div>

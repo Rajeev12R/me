@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased` }
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white min-h-screen relative overflow-x-hidden`}
       >
         <SplashCursor/>
         <div style={{ width: '100%', height: '100%',}} className="absolute inset-0 -z-10 pointer-events-none">
